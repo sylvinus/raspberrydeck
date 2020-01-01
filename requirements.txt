@@ -1,0 +1,6 @@
+pafy==0.5.5
+streamdeck==0.6.3
+python-vlc==3.0.7110
+youtube-dl==2019.12.25
+pillow==6.2.1
+hid==1.0.4
