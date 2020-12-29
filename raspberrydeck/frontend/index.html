@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+    <title>Raspberry Deck</title>
+
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="/bootstrap.min.css"
+    />
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="/bootstrap-vue.min.css"
+    />
+
+    <script src="/vue.min.js"></script>
+    <script src="/bootstrap-vue.min.js"></script>
+    <script src="/axios.min.js"></script>
+    <script src="/Sortable.min.js"></script>
+    <script src="/vuedraggable.umd.min.js"></script>
+    
+    <style>
+      .card {
+        margin-top:20px;
+      }
+      button {
+        margin:20px 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <b-container id="app">
+      <h1>Raspberry Deck</h1>
+      <p>You can add media below, they will be downloaded and added to the Stream Deck.</p>
+      
+
+
+      <draggable
+        :list="state.medialist"
+        @start="dragging = true"
+        @end="dragging = false"
+        ghost-class="ghost"
+      >
+        <div v-if="loading">Loading...</div>
+        <b-card style="cursor:move" v-else v-for="(media, index) in state.medialist" :key="media.url">
+
+          <div style="float:left;width:110px;">
+            <img v-if="media.image || media.url" style="max-width:80px;max-height:80px;" :src="media.image?media.image:'/api/image?url='+encodeURIComponent(media.url)" />
+
+            <b-button size="sm" variant="outline-danger" @click="removeMedia(index)">Remove</b-button>
+          </div>
+
+          <div style="margin-left:110px;">
+            <b-form-group
+              horizontal
+              :label-cols="2"
+              label="Media URL"
+              description="Try a YouTube video URL!"
+            >
+              <b-form-input class="media_url" v-model.trim="media.url"></b-form-input>
+            </b-form-group>
+            <b-form-group
+              horizontal
+              :label-cols="2"
+              label="Thumbnail URL"
+              description="Leave blank for default thumbnail"
+            >
+              <b-form-input class="thumbnail_url" v-model.trim="media.image"></b-form-input>
+            </b-form-group>
+          </div>
+        </b-card>
+      </draggable>
+
+      <b-button variant="success" @click="save()" v-if="!saving && state.medialist && state.medialist.length > 0">Save</b-button>
+      <b-button variant="success" disabled v-if="saving">Saving...</b-button>
+      <b-button variant="outline-primary" @click="newMedia()">Add new media</b-button>
+      
+    </b-container>
+
+    <script>
+      window.app = new Vue({
+        el: '#app',
+        data: {
+          state: {},
+          loading:true,
+          saving:false
+        },
+        computed: {
+        },
+        methods: {
+          newMedia: function() {
+            this.state.medialist.push({"url": ""});
+            this.$nextTick(function() {
+              document.querySelector(".card:last-of-type input.media_url").focus();
+            });
+          },
+          removeMedia: function(index) {
+            this.state.medialist.splice(index, 1);
+          },
+          save: function() {
+            var self = this;
+            self.saving = true;
+            axios.post("/api/medialist", this.state.medialist).then(function() {
+              self.saving = false;
+            });
+          }
+        },
+        mounted: function() {
+          var self = this;
+          axios.get("/api/state").then(function(response) {
+            self.state = response.data || {};
+            if (!self.state.medialist) {
+              self.state.medialist = [];
+            }
+            self.loading = false;
+          });
+        }
+      })
+    </script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
-pafy==0.5.5
-streamdeck==0.6.3
-python-vlc==3.0.7110
-youtube-dl==2019.12.25
-pillow==6.2.1
-hid==1.0.4
+# Only use versions supporting Python 3.5
+pillow==7.2.0
+python-vlc==3.0.11115
+streamdeck==0.7.3
+Flask==1.1.2
+youtube_dl==2020.11.12
